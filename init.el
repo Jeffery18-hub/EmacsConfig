@@ -124,7 +124,7 @@
 (setq osx-dictionary-use-chinese-text-segmentation t)
 
 
-;; Key bindings for dinctionary
+;; Key bindings for dinctionary, 字典 字典
 (global-set-key (kbd "C-c d") 'osx-dictionary-search-word-at-point)
 ;; (global-set-key (kbd "C-c i") 'osx-dictionary-search-input)
 
@@ -202,6 +202,15 @@ Supports exporting consult-grep to wgrep, file to wdeired, and consult-location 
 (progn (require 'org-tempo))
 
 
+;;(setq org-capture-templates
+;;      '(("t" "Todo" entry (file+headline "~/gtd.org" "Workspace")
+;;	 "* TODO [#B] %?\n  %i\n %U"
+;;	 :empty-lines 1)))
+
+(global-set-key (kbd "C-c c") 'org-capture)
+
+
+
 ;; 设置任务流程
 (setq org-todo-keywords
       '((sequence "not started(p!)" "in progress(t!)" "blocked(s!)" "|" "finished(d!)" "canceled(a@/!)")))
@@ -225,8 +234,35 @@ Supports exporting consult-grep to wgrep, file to wdeired, and consult-location 
 
 
 
+;; org mode to wirte blog
+(use-package ox-hugo
+  :ensure t   ;Auto-install the package from Melpa
+  :after ox)
 
+(with-eval-after-load 'org-capture
+      (defun org-hugo-new-subtree-post-capture-template ()
+	"Returns `org-capture' template string for new Hugo post.
+See `org-capture-templates' for more information."
+	(let* ((title (read-from-minibuffer "Post Title: ")) ;Prompt to enter the post title
+	       (fname (org-hugo-slug title)))
+	  (mapconcat #'identity
+		     `(
+		       ,(concat "* TODO " title)
+		       ":PROPERTIES:"
+		       ,(concat ":EXPORT_FILE_NAME: " fname)
+		       ":END:"
+		       "\n\n")          ;Place the cursor here finally
+		     "\n")))
 
+      (add-to-list 'org-capture-templates
+		   '("h"                ;`org-capture' binding + h
+		     "Hugo post"
+		     entry
+		     ;; It is assumed that below file is present in `org-directory'
+		     ;; and that it has a "Blog Ideas" heading. It can even be a
+		     ;; symlink pointing to the actual location of all-posts.org!
+		     (file+headline "~/blog/all-blog.org" "Blog Ideas")
+		     (function org-hugo-new-subtree-post-capture-template))))
 
 
 
@@ -250,3 +286,4 @@ Supports exporting consult-grep to wgrep, file to wdeired, and consult-location 
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
